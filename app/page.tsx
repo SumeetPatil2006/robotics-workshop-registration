@@ -1,69 +1,160 @@
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, CircuitBoard, Cpu, MapPin } from "lucide-react";
+import { eventConfig, eventDetails } from "@/lib/event-data";
 
-export default function Home() {
+export default function HomePage() {
+  const techItems = [
+    {
+      title: "Line Following Robot",
+      description: "Build a robot that senses and tracks a path with precision.",
+      icon: Cpu,
+    },
+    {
+      title: "Pick & Place Robot",
+      description: "Design a robot that identifies and moves objects reliably.",
+      icon: CircuitBoard,
+    },
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+      <header className="border-b border-[var(--border)] bg-white/90 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dfeafc] bg-[#edf6ff] text-[9px] font-bold tracking-[0.2em] text-[var(--blue)]">
+              TF
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
+                Techfest
+              </p>
+              <p className="mt-1 text-base font-semibold tracking-[-0.03em] text-[var(--navy)]">
+                Robotics Workshop
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+      </header>
+
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+        <section className="pt-2 lg:pt-4">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.08fr_0.92fr]">
+            <div className="max-w-[620px]">
+              <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[var(--blue)]">
+                {eventConfig.partner}
+              </p>
+              <h1 className="mt-5 text-[3.3rem] font-semibold leading-[0.9] tracking-[-0.07em] text-[var(--navy)] sm:text-[4.1rem] lg:text-[5.3rem]">
+                <span className="block">Robotics</span>
+                <span className="block text-[var(--blue)]">Workshop</span>
+              </h1>
+
+              <p className="mt-5 max-w-xl text-base leading-7 text-[var(--muted)] sm:text-lg">
+                {eventConfig.shortDescription}
+              </p>
+
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <Link
+                  href="/register"
+                  className="inline-flex items-center gap-2 rounded-full bg-[var(--navy)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--blue)]"
+                >
+                  Register Now
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 -z-10 rounded-[32px] border border-[#dfeafc] bg-[linear-gradient(135deg,_rgba(118,214,255,0.16),_rgba(255,255,255,0.94)_40%,_rgba(186,230,255,0.18))]" />
+              <div className="relative overflow-hidden rounded-[32px] border border-[#dfeafc] bg-white p-3 shadow-[0_20px_50px_rgba(13,29,59,0.06)] sm:p-5">
+                <div className="tech-grid absolute inset-0 opacity-70" />
+                <div className="absolute left-4 top-4 h-24 w-24 rounded-full border border-[#bfe9ff] bg-[#f3fbff]" />
+                <div className="absolute bottom-5 left-5 h-14 w-14 rounded-full border border-[#d7ecff] bg-[#edf8ff]" />
+                <div className="absolute right-4 top-8 h-28 w-28 rounded-full border border-[#dfeafc] bg-[#f9fcff]" />
+
+                <div className="relative z-10 overflow-hidden rounded-[26px] border border-[#dfeafc] bg-[rgba(255,255,255,0.9)] p-3 sm:p-4">
+                  <div className="relative h-[300px] w-full overflow-hidden rounded-[18px] sm:h-[340px] lg:h-[380px]">
+                    <Image
+                      src="/robotics-hero.png"
+                      alt="Robotics workshop illustration"
+                      fill
+                      priority
+                      className="object-cover object-center"
+                      sizes="(max-width: 768px) 100vw, 42vw"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-12 border-t border-[var(--border)] pt-10 lg:mt-14">
+          <div className="grid gap-8 lg:grid-cols-[1.15fr_1.1fr_0.95fr]">
+            <div>
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#dfeafc] bg-[#edf6ff] text-[var(--blue)]">
+                  <Cpu className="h-4 w-4" />
+                </div>
+                <p className="section-label !tracking-[0.24em]">About the workshop</p>
+              </div>
+              <p className="mt-5 text-base leading-7 text-[var(--muted)] sm:text-lg">
+                {eventConfig.description}
+              </p>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#dfeafc] bg-[#edf6ff] text-[var(--blue)]">
+                  <CircuitBoard className="h-4 w-4" />
+                </div>
+                <p className="section-label !tracking-[0.24em]">What you&apos;ll build</p>
+              </div>
+              <div className="mt-5 space-y-3">
+                {techItems.map(({ title, description, icon: Icon }) => (
+                  <div key={title} className="flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-white px-3 py-3">
+                    <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl border border-[#dfeafc] bg-[#edf6ff] text-[var(--blue)]">
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-base font-semibold tracking-[-0.04em] text-[var(--navy)]">{title}</p>
+                      <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#dfeafc] bg-[#edf6ff] text-[var(--blue)]">
+                  <MapPin className="h-4 w-4" />
+                </div>
+                <p className="section-label !tracking-[0.24em]">Event details</p>
+              </div>
+              <div className="mt-5 rounded-[24px] border border-[var(--border)] bg-white p-4 shadow-[0_12px_32px_rgba(13,29,59,0.04)] sm:p-5">
+                {eventDetails.map((item) => (
+                  <div key={item.label} className="detail-row">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
+                      {item.label}
+                    </span>
+                    <span className="text-sm font-semibold text-[var(--navy)] sm:text-base">
+                      {item.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
+
+      <footer className="border-t border-[var(--border)] bg-white/80">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4 text-sm text-[var(--muted)] sm:px-6 lg:px-8">
+          <span>{eventConfig.partner}</span>
+          <span>{eventConfig.footerNote}</span>
+        </div>
+      </footer>
     </div>
   );
 }
