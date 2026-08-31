@@ -22,8 +22,14 @@ export default function HomePage() {
       <header className="border-b border-[var(--border)] bg-white/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#dfeafc] bg-[#edf6ff] text-[9px] font-bold tracking-[0.2em] text-[var(--blue)]">
-              TF
+            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-[#dfeafc] bg-[#edf6ff]">
+              <Image
+                src="/images/Techfest logo.png"
+                alt="Techfest logo"
+                width={40}
+                height={40}
+                className="h-full w-full object-contain"
+              />
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">

@@ -5,23 +5,21 @@ export const eventConfig = {
   partner: "Techfest, IIT Bombay × KBTCOE",
   programName: "Technorion 2026–27",
   description:
-    "This workshop is a practical robotics session where students learn through construction and experimentation with autonomous systems.",
+    "An interactive robotics seminar focused on learning autonomous systems through practical demonstrations and real-world applications.",
   workshopFocus: [
     "Line Following Robot",
     "Pick & Place Robot",
   ],
   isFree: true,
-  date: "TBD",
-  time: "TBD",
-  venue: "TBD",
-  registrationDeadline: "TBD",
+  date: "11 September",
+  venue: "KBTCOE",
+  registrationDeadline: "10 September",
   capacity: "TBD",
   footerNote: "Registration for this workshop is free.",
 };
 
 export const eventDetails = [
   { label: "Date", value: eventConfig.date },
-  { label: "Time", value: eventConfig.time },
   { label: "Venue", value: eventConfig.venue },
   { label: "Program", value: eventConfig.programName },
   { label: "Registration", value: eventConfig.isFree ? "Free" : "Paid" },
