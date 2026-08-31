@@ -149,8 +149,8 @@ export default function AdminScanPage() {
             // @ts-ignore
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } });
             const track = stream.getVideoTracks()[0];
-            const settings = track.getSettings ? track.getSettings() : {};
-            const foundDeviceId = (settings as any).deviceId as string | undefined;
+            const settings = track.getSettings ? track.getSettings() : ({} as MediaTrackSettings);
+            const foundDeviceId = (settings.deviceId as string) || undefined;
             if (foundDeviceId) {
               const match = availableDevices.find((d) => d.deviceId === foundDeviceId);
               if (match) {

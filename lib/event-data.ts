@@ -34,6 +34,7 @@ export const branchOptions = [
   "Civil",
   "Electrical",
   "Robotics",
+  "Instrumentation",
   "Other",
 ];
 
