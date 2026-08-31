@@ -48,6 +48,7 @@ export default function AdminScanPage() {
   const controlsRef = useRef<{ stop: () => void } | null>(null);
   const isProcessingRef = useRef(false);
   const currentTicketIdRef = useRef<string | null>(null);
+  const preferredDeviceIdRef = useRef<string | undefined>(undefined);
   const [status, setStatus] = useState<ResultState>("scanning");
   const [message, setMessage] = useState("Scanning for QR ticket...");
   const [registration, setRegistration] = useState<RegistrationRecord | null>(null);
@@ -110,7 +111,7 @@ export default function AdminScanPage() {
       return;
     }
 
-    setCameraError("");
+    // Clear transient UI state but do not surface camera permission warnings.
     setStatus("scanning");
     setMessage("Scanning for QR ticket...");
     setRegistration(null);
@@ -120,7 +121,54 @@ export default function AdminScanPage() {
     try {
       const reader = new BrowserMultiFormatReader();
       const inputDevices = await BrowserCodeReader.listVideoInputDevices();
-      const selectedDeviceId = inputDevices[0]?.deviceId ?? undefined;
+      const availableDevices = inputDevices.filter((d) => d.kind === "videoinput");
+
+      const isMobileDevice =
+        typeof navigator !== "undefined" &&
+        (navigator.maxTouchPoints > 0 || /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent));
+
+      // Prefer persisted device id so the rear camera remains selected across opens.
+      let selectedDeviceId = preferredDeviceIdRef.current ?? inputDevices[0]?.deviceId ?? undefined;
+
+      if (!preferredDeviceIdRef.current && isMobileDevice && availableDevices.length > 0) {
+        // Try to prefer labeled environment/rear/back devices when labels exist.
+        const labeled = availableDevices.find((device) => {
+          const label = (device.label || "").toLowerCase();
+          return label.includes("environment") || label.includes("rear") || label.includes("back");
+        });
+
+        if (labeled) {
+          selectedDeviceId = labeled.deviceId;
+          preferredDeviceIdRef.current = labeled.deviceId;
+        } else {
+          // Labels may be empty until permissions are granted. Request a temporary
+          // stream with facingMode: 'environment' to discover the environment
+          // deviceId, then persist it for future opens.
+          try {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } });
+            const track = stream.getVideoTracks()[0];
+            const settings = track.getSettings ? track.getSettings() : {};
+            const foundDeviceId = (settings as any).deviceId as string | undefined;
+            if (foundDeviceId) {
+              const match = availableDevices.find((d) => d.deviceId === foundDeviceId);
+              if (match) {
+                selectedDeviceId = match.deviceId;
+                preferredDeviceIdRef.current = match.deviceId;
+              }
+            }
+            try {
+              track.stop();
+            } catch {}
+          } catch {
+            // Ignore failures — fall back to default device selection.
+          }
+        }
+      }
+
+      // Persist whatever device we selected so subsequent starts reuse it.
+      if (selectedDeviceId) preferredDeviceIdRef.current = selectedDeviceId;
 
       const controls = await reader.decodeFromVideoDevice(
         selectedDeviceId,
@@ -188,17 +236,17 @@ export default function AdminScanPage() {
             }
           }
 
+          // Fail silently on camera errors — do not surface a camera warning.
           if (error && error?.name !== "NotFoundException") {
-            setStatus("error");
-            setCameraError("Unable to access the camera. Please allow camera permissions and try again.");
+            // intentionally no-op
           }
         },
       );
 
       controlsRef.current = controls;
     } catch {
-      setStatus("error");
-      setCameraError("Camera access is unavailable on this device or browser.");
+      // initialization failed (permissions or device unavailable).
+      // Fail silently and leave preview blank per admin preference.
     }
   };
 
