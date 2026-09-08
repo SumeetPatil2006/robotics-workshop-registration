@@ -9,6 +9,7 @@ const initialForm = {
   branch: "",
   year: "",
   email: "",
+  mobile: "",
 };
 
 export function RegistrationForm() {
@@ -17,10 +18,20 @@ export function RegistrationForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = event.target;
-    setFormData((current) => ({ ...current, [name]: value }));
-    setErrors((current) => ({ ...current, [name]: "" }));
+
+    setFormData((current) => ({
+      ...current,
+      [name]: value,
+    }));
+
+    setErrors((current) => ({
+      ...current,
+      [name]: "",
+    }));
   };
 
   const validateClient = () => {
@@ -38,15 +49,28 @@ export function RegistrationForm() {
       nextErrors.year = "Please select your year.";
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (!formData.email.trim()) {
+      nextErrors.email = "Email address is required.";
+    } else if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
+    ) {
       nextErrors.email = "Enter a valid email address.";
     }
 
+    if (!formData.mobile.trim()) {
+      nextErrors.mobile = "Mobile number is required.";
+    } else if (!/^[6-9]\d{9}$/.test(formData.mobile)) {
+      nextErrors.mobile = "Enter a valid 10-digit mobile number.";
+    }
+
     setErrors(nextErrors);
+
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
 
     if (!validateClient()) {
@@ -66,13 +90,18 @@ export function RegistrationForm() {
           branch: formData.branch,
           year: formData.year,
           email: formData.email.trim(),
+          mobile: formData.mobile.trim(),
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setErrors({ form: data.error || "Please review the form and try again." });
+        setErrors({
+          form:
+            data.error ||
+            "Please review the form and try again.",
+        });
         return;
       }
 
@@ -82,14 +111,15 @@ export function RegistrationForm() {
           JSON.stringify({
             registration: data.registration,
             ticket: data.ticket,
-          }),
+          })
         );
       }
 
       router.push("/register/success");
     } catch {
       setErrors({
-        form: "Something went wrong while submitting. Please try again.",
+        form:
+          "Something went wrong while submitting. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
@@ -97,69 +127,113 @@ export function RegistrationForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)] sm:p-8">
+    <form
+      onSubmit={handleSubmit}
+      className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)] sm:p-8"
+    >
       <div className="space-y-5">
+
+        {/* Full Name */}
         <div>
-          <label htmlFor="fullName" className="mb-2 block text-sm font-medium text-slate-700">
+          <label
+            htmlFor="fullName"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
             Full Name
           </label>
+
           <input
             id="fullName"
             name="fullName"
             value={formData.fullName}
             onChange={handleChange}
             placeholder="Your full name"
+            required
             className="w-full rounded-xl border border-slate-200 bg-stone-50 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none"
           />
-          {errors.fullName && <p className="mt-2 text-sm text-red-600">{errors.fullName}</p>}
+
+          {errors.fullName && (
+            <p className="mt-2 text-sm text-red-600">
+              {errors.fullName}
+            </p>
+          )}
         </div>
 
+        {/* Branch */}
         <div>
-          <label htmlFor="branch" className="mb-2 block text-sm font-medium text-slate-700">
+          <label
+            htmlFor="branch"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
             Branch
           </label>
+
           <select
             id="branch"
             name="branch"
             value={formData.branch}
             onChange={handleChange}
+            required
             className="w-full rounded-xl border border-slate-200 bg-stone-50 px-4 py-3 text-slate-900 focus:border-slate-400 focus:outline-none"
           >
             <option value="">Select your branch</option>
+
             {branchOptions.map((branch) => (
               <option key={branch} value={branch}>
                 {branch}
               </option>
             ))}
           </select>
-          {errors.branch && <p className="mt-2 text-sm text-red-600">{errors.branch}</p>}
+
+          {errors.branch && (
+            <p className="mt-2 text-sm text-red-600">
+              {errors.branch}
+            </p>
+          )}
         </div>
 
+        {/* Year */}
         <div>
-          <label htmlFor="year" className="mb-2 block text-sm font-medium text-slate-700">
+          <label
+            htmlFor="year"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
             Year
           </label>
+
           <select
             id="year"
             name="year"
             value={formData.year}
             onChange={handleChange}
+            required
             className="w-full rounded-xl border border-slate-200 bg-stone-50 px-4 py-3 text-slate-900 focus:border-slate-400 focus:outline-none"
           >
             <option value="">Select your year</option>
+
             {yearOptions.map((year) => (
               <option key={year} value={year}>
                 {year}
               </option>
             ))}
           </select>
-          {errors.year && <p className="mt-2 text-sm text-red-600">{errors.year}</p>}
+
+          {errors.year && (
+            <p className="mt-2 text-sm text-red-600">
+              {errors.year}
+            </p>
+          )}
         </div>
 
+        {/* Email */}
         <div>
-          <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-700">
+          <label
+            htmlFor="email"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
             Email Address
           </label>
+
           <input
             id="email"
             name="email"
@@ -167,24 +241,64 @@ export function RegistrationForm() {
             value={formData.email}
             onChange={handleChange}
             placeholder="name@example.com"
+            required
             className="w-full rounded-xl border border-slate-200 bg-stone-50 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none"
           />
-          {errors.email && <p className="mt-2 text-sm text-red-600">{errors.email}</p>}
+
+          {errors.email && (
+            <p className="mt-2 text-sm text-red-600">
+              {errors.email}
+            </p>
+          )}
+        </div>
+
+        {/* Mobile Number */}
+        <div>
+          <label
+            htmlFor="mobile"
+            className="mb-2 block text-sm font-medium text-slate-700"
+          >
+            Mobile Number
+          </label>
+
+          <input
+            id="mobile"
+            name="mobile"
+            type="tel"
+            value={formData.mobile}
+            onChange={handleChange}
+            placeholder="Enter 10-digit mobile number"
+            required
+            maxLength={10}
+            inputMode="numeric"
+            pattern="[6-9][0-9]{9}"
+            className="w-full rounded-xl border border-slate-200 bg-stone-50 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none"
+          />
+
+          {errors.mobile && (
+            <p className="mt-2 text-sm text-red-600">
+              {errors.mobile}
+            </p>
+          )}
         </div>
       </div>
 
+      {/* Form Error */}
       {errors.form && (
         <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {errors.form}
         </div>
       )}
 
+      {/* Submit Button */}
       <button
         type="submit"
         disabled={isSubmitting}
         className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3.5 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-70"
       >
-        {isSubmitting ? "Submitting..." : "Register for Workshop"}
+        {isSubmitting
+          ? "Submitting..."
+          : "Register for Workshop"}
       </button>
     </form>
   );

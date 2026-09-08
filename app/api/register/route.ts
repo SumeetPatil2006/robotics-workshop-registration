@@ -16,6 +16,7 @@ const createEmailHtml = ({
   branch,
   year,
   email,
+  mobile,
   qrCodeDataUrl,
 }: {
   fullName: string;
@@ -23,6 +24,7 @@ const createEmailHtml = ({
   branch: string;
   year: string;
   email: string;
+  mobile: string;
   qrCodeDataUrl: string;
 }) => `
   <div style="font-family: Arial, sans-serif; background:#f5f5f4; padding:32px; color:#111827;">
@@ -41,6 +43,7 @@ const createEmailHtml = ({
             <p style="margin:10px 0 0; font-size:22px; font-weight:700; color:#0f172a;">${fullName}</p>
             <p style="margin:8px 0 0; font-size:14px; color:#475569;">${branch} • ${year}</p>
             <p style="margin:8px 0 0; font-size:14px; color:#475569;">${email}</p>
+            <p style="margin:8px 0 0; font-size:14px; color:#475569;">Mobile: ${mobile}</p>
           </div>
 
           <div style="padding:12px 16px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; min-width:170px;">
@@ -78,6 +81,7 @@ export async function POST(request: Request) {
       hasFullName: typeof payload?.fullName === "string",
       hasBranch: typeof payload?.branch === "string",
       hasYear: typeof payload?.year === "string",
+      hasMobile: typeof payload?.mobile === "string",
     });
 
     const validationResult = validateRegistrationInput(payload);
@@ -113,6 +117,7 @@ export async function POST(request: Request) {
     console.log("[register] inserting registration into Supabase", {
       registrationId,
       email: validationResult.data.email,
+      mobile: validationResult.data.mobile,
     });
 
     const { data, error } = await supabaseAdmin
@@ -123,6 +128,7 @@ export async function POST(request: Request) {
         branch: validationResult.data.branch,
         year: validationResult.data.year,
         email: validationResult.data.email,
+        mobile: validationResult.data.mobile,
       })
       .select()
       .single();
@@ -151,6 +157,7 @@ export async function POST(request: Request) {
     console.log("[register] Supabase insert succeeded", {
       registrationId: data.registration_id,
       email: data.email,
+      mobile: data.mobile,
     });
 
     const resendApiKey = process.env.RESEND_API_KEY?.trim();
@@ -195,6 +202,7 @@ export async function POST(request: Request) {
       branch: data.branch,
       year: data.year,
       email: data.email,
+      mobile: data.mobile,
       qrCodeDataUrl,
     });
 

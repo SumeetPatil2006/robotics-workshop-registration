@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowLeft, Camera, CheckCircle2, ShieldCheck, XCircle } from "lucide-react";
-import { BrowserCodeReader, BrowserMultiFormatReader } from "@zxing/browser";
+import { BrowserCodeReader, BrowserQRCodeReader } from "@zxing/browser";
 import { useEffect, useRef, useState } from "react";
 
 type RegistrationRecord = {
@@ -119,7 +119,7 @@ export default function AdminScanPage() {
     isProcessingRef.current = false;
 
     try {
-      const reader = new BrowserMultiFormatReader();
+      const reader = new BrowserQRCodeReader();
       const inputDevices = await BrowserCodeReader.listVideoInputDevices();
       const availableDevices = inputDevices.filter((d) => d.kind === "videoinput");
 

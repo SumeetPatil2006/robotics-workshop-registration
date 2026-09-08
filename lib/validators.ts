@@ -1,10 +1,33 @@
 import { z } from "zod";
 
 export const registrationSchema = z.object({
-  fullName: z.string().trim().min(2, "Full name is required."),
-  branch: z.string().trim().min(2, "Please select your branch."),
-  year: z.string().trim().min(2, "Please select your year."),
-  email: z.string().trim().email("Enter a valid email address."),
+  fullName: z
+    .string()
+    .trim()
+    .min(2, "Full name is required."),
+
+  branch: z
+    .string()
+    .trim()
+    .min(2, "Please select your branch."),
+
+  year: z
+    .string()
+    .trim()
+    .min(2, "Please select your year."),
+
+  email: z
+    .string()
+    .trim()
+    .email("Enter a valid email address."),
+
+  mobile: z
+    .string()
+    .trim()
+    .regex(
+      /^[6-9]\d{9}$/,
+      "Enter a valid 10-digit mobile number."
+    ),
 });
 
 export const validateRegistrationInput = (input: unknown) => {
@@ -12,9 +35,12 @@ export const validateRegistrationInput = (input: unknown) => {
 
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
+
     return {
       success: false as const,
-      error: issue?.message || "Please review the form and try again.",
+      error:
+        issue?.message ||
+        "Please review the form and try again.",
     };
   }
 
@@ -27,6 +53,7 @@ export const validateRegistrationInput = (input: unknown) => {
       branch: data.branch.trim(),
       year: data.year.trim(),
       email: data.email.trim().toLowerCase(),
+      mobile: data.mobile.trim(),
     },
   };
 };
