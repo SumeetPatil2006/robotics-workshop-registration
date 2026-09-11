@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowUpDown, Camera, CheckCircle2, ChevronLeft, ChevronRight, LogOut, RefreshCcw, Search, Users, XCircle } from "lucide-react";
+import { ArrowUpDown, Camera, Check, CheckCircle2, ChevronLeft, ChevronRight, Loader2, LogOut, RefreshCcw, RotateCcw, Search, Users, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { CustomSelect } from "@/components/custom-select";
-import { yearOptions } from "@/lib/event-data";
+import { toast } from "@/components/toast";
 
 type RegistrationRow = {
   id: string;
@@ -72,11 +72,73 @@ export function AdminDashboard() {
   });
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "checked_in" | "not_checked_in">("all");
-  const [yearFilter, setYearFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [updatingTicketId, setUpdatingTicketId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+
+  const handleToggleStatus = async (ticketId: string, currentStatus: boolean) => {
+    const newStatus = !currentStatus;
+    setUpdatingTicketId(ticketId);
+
+    try {
+      const response = await fetch("/api/admin/update-status", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ticketId,
+          checkedIn: newStatus,
+        }),
+      });
+
+      const data = (await response.json()) as {
+        registration?: RegistrationRow;
+        message?: string;
+        error?: string;
+      };
+
+      if (!response.ok) {
+        toast.error(data.error || "Failed to update status. Please try again.");
+        return;
+      }
+
+      setRegistrations((prev) =>
+        prev.map((row) => {
+          if (row.registration_id === ticketId) {
+            return {
+              ...row,
+              checked_in: newStatus,
+              checked_in_at: newStatus ? (data.registration?.checked_in_at || new Date().toISOString()) : null,
+            };
+          }
+          return row;
+        }),
+      );
+
+      setStats((prev) => {
+        const checkedInCount = newStatus ? prev.checkedInCount + 1 : Math.max(0, prev.checkedInCount - 1);
+        const notCheckedInCount = newStatus ? Math.max(0, prev.notCheckedInCount - 1) : prev.notCheckedInCount + 1;
+        const attendancePercentage =
+          prev.totalRegistrations === 0 ? 0 : (checkedInCount / prev.totalRegistrations) * 100;
+
+        return {
+          ...prev,
+          checkedInCount,
+          notCheckedInCount,
+          attendancePercentage,
+        };
+      });
+
+      toast.success(`Status for ticket ${ticketId} updated to ${newStatus ? "Checked in" : "Not checked in"}.`);
+    } catch {
+      toast.error("Network error occurred while updating status. Please try again.");
+    } finally {
+      setUpdatingTicketId(null);
+    }
+  };
 
   const loadRegistrations = async () => {
     setLoading(true);
@@ -230,11 +292,9 @@ export function AdminDashboard() {
             ? row.checked_in
             : !row.checked_in;
 
-      const matchesYear = yearFilter === "all" ? true : row.year === yearFilter;
-
-      return matchesQuery && matchesStatus && matchesYear;
+      return matchesQuery && matchesStatus;
     });
-  }, [query, registrations, statusFilter, yearFilter]);
+  }, [query, registrations, statusFilter]);
 
   const totalPages = Math.ceil(filteredRegistrations.length / itemsPerPage);
 
@@ -258,7 +318,7 @@ export function AdminDashboard() {
     <main className="min-h-screen bg-[var(--background)] px-4 py-8 text-[var(--foreground)] sm:px-6">
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="rounded-[30px] border border-[var(--border)] bg-white p-5 shadow-[0_14px_40px_rgba(13,29,59,0.05)] sm:p-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--blue)]">Organizer access</p>
               <h1 className="mt-3 text-3xl font-semibold tracking-[-0.06em] text-[var(--navy)]">Event Dashboard</h1>
@@ -267,11 +327,11 @@ export function AdminDashboard() {
               </p>
             </div>
 
-            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
                 onClick={() => void loadRegistrations()}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-2.5 text-sm font-medium text-[var(--navy)] transition hover:border-[var(--blue)] hover:text-[var(--blue)] sm:w-auto"
+                className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-2.5 text-sm font-medium text-[var(--navy)] transition hover:border-[var(--blue)] hover:text-[var(--blue)]"
               >
                 <RefreshCcw className="h-4 w-4" />
                 Refresh
@@ -279,7 +339,7 @@ export function AdminDashboard() {
 
               <Link
                 href="/admin/scan"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--navy)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--blue)] sm:w-auto"
+                className="inline-flex items-center gap-2 rounded-full bg-[var(--navy)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--blue)]"
               >
                 <Camera className="h-4 w-4" />
                 Scan QR Ticket
@@ -288,7 +348,7 @@ export function AdminDashboard() {
               <button
                 type="button"
                 onClick={() => void handleLogout()}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-2.5 text-sm font-medium text-[var(--navy)] transition hover:border-red-300 hover:text-red-600 sm:w-auto"
+                className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-2.5 text-sm font-medium text-[var(--navy)] transition hover:border-red-300 hover:text-red-600"
               >
                 <LogOut className="h-4 w-4" />
                 Logout
@@ -340,8 +400,8 @@ export function AdminDashboard() {
         </div>
 
         <div className="rounded-[30px] border border-[var(--border)] bg-white p-5 shadow-[0_14px_40px_rgba(13,29,59,0.05)] sm:p-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div className="flex-1">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end">
+            <div className="flex-1 min-w-0">
               <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Search</label>
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
@@ -357,43 +417,23 @@ export function AdminDashboard() {
               </div>
             </div>
 
-            <div className="flex flex-1 flex-col gap-3 sm:flex-row lg:justify-end">
-              <div className="sm:w-40 lg:w-44">
-                <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Year</label>
-                <CustomSelect
-                  value={yearFilter}
-                  onChange={(value) => {
-                    setYearFilter(value);
-                    setCurrentPage(1);
-                  }}
-                  options={[
-                    { value: "all", label: "All years" },
-                    ...yearOptions.map(y => ({ value: y, label: y }))
-                  ]}
-                  placeholder="Year"
-                  className="w-full rounded-full border border-[var(--border)] bg-[var(--soft-blue)] px-4 py-3 text-sm text-[var(--navy)] focus:border-[var(--blue)] focus:outline-none transition hover:border-[var(--blue)]"
-                  dropdownClassName="rounded-[20px] border-[var(--border)] shadow-[0_8px_25px_rgba(13,29,59,0.08)]"
-                />
-              </div>
-
-              <div className="sm:w-40 lg:w-44">
-                <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Status</label>
-                <CustomSelect
-                  value={statusFilter}
-                  onChange={(value) => {
-                    setStatusFilter(value as "all" | "checked_in" | "not_checked_in");
-                    setCurrentPage(1);
-                  }}
-                  options={[
-                    { value: "all", label: "All status" },
-                    { value: "checked_in", label: "Checked in" },
-                    { value: "not_checked_in", label: "Not checked in" },
-                  ]}
-                  placeholder="Status"
-                  className="w-full rounded-full border border-[var(--border)] bg-[var(--soft-blue)] px-4 py-3 text-sm text-[var(--navy)] focus:border-[var(--blue)] focus:outline-none transition hover:border-[var(--blue)]"
-                  dropdownClassName="rounded-[20px] border-[var(--border)] shadow-[0_8px_25px_rgba(13,29,59,0.08)]"
-                />
-              </div>
+            <div className="w-full md:w-48 shrink-0">
+              <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Status</label>
+              <CustomSelect
+                value={statusFilter}
+                onChange={(value) => {
+                  setStatusFilter(value as "all" | "checked_in" | "not_checked_in");
+                  setCurrentPage(1);
+                }}
+                options={[
+                  { value: "all", label: "All status" },
+                  { value: "checked_in", label: "Checked in" },
+                  { value: "not_checked_in", label: "Not checked in" },
+                ]}
+                placeholder="Status"
+                className="w-full rounded-full border border-[var(--border)] bg-[var(--soft-blue)] px-4 py-3 text-sm text-[var(--navy)] focus:border-[var(--blue)] focus:outline-none transition hover:border-[var(--blue)]"
+                dropdownClassName="rounded-[20px] border-[var(--border)] shadow-[0_8px_25px_rgba(13,29,59,0.08)]"
+              />
             </div>
           </div>
 
@@ -419,33 +459,67 @@ export function AdminDashboard() {
                       <th className="px-4 py-3 font-semibold">Branch</th>
                       <th className="px-4 py-3 font-semibold">Year</th>
                       <th className="px-4 py-3 font-semibold">Registration date</th>
-                      <th className="px-4 py-3 font-semibold">Check-in</th>
+                      <th className="px-4 py-3 font-semibold text-center">Check-in</th>
                       <th className="px-4 py-3 font-semibold">Check-in time</th>
+                      <th className="px-4 py-3 font-semibold text-center">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--border)] bg-white text-[var(--navy)]">
                     {paginatedRegistrations.map((row) => (
-                      <tr key={row.id} className="align-top">
+                      <tr key={row.id} className="align-middle">
                         <td className="px-4 py-3 font-medium text-[var(--blue)]">{row.registration_id}</td>
                         <td className="px-4 py-3">{row.full_name}</td>
                         <td className="px-4 py-3 break-all">{row.email}</td>
                         <td className="px-4 py-3">{row.branch}</td>
                         <td className="px-4 py-3">{row.year}</td>
                         <td className="px-4 py-3">{formatShortDate(row.created_at)}</td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 text-center">
                           {row.checked_in ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                              <CheckCircle2 className="h-3.5 w-3.5" />
-                              Checked in
+                            <span
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50 text-emerald-600"
+                              title="Checked in"
+                            >
+                              <CheckCircle2 className="h-4 w-4" />
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
-                              <XCircle className="h-3.5 w-3.5" />
-                              Not checked in
+                            <span
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-amber-50 text-amber-600"
+                              title="Not checked in"
+                            >
+                              <XCircle className="h-4 w-4" />
                             </span>
                           )}
                         </td>
                         <td className="px-4 py-3">{formatDateTime(row.checked_in_at)}</td>
+                        <td className="px-4 py-3 text-center whitespace-nowrap">
+                          {updatingTicketId === row.registration_id ? (
+                            <span className="inline-flex h-8 w-8 items-center justify-center text-[var(--blue)]">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            </span>
+                          ) : row.checked_in ? (
+                            <button
+                              type="button"
+                              onClick={() => void handleToggleStatus(row.registration_id, true)}
+                              disabled={updatingTicketId !== null}
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[var(--muted)] transition hover:border-amber-400 hover:bg-amber-50 hover:text-amber-700 disabled:opacity-50"
+                              title="Undo check-in"
+                              aria-label="Undo check-in"
+                            >
+                              <RotateCcw className="h-4 w-4" />
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => void handleToggleStatus(row.registration_id, false)}
+                              disabled={updatingTicketId !== null}
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-600/30 bg-emerald-50 text-emerald-700 transition hover:bg-emerald-600 hover:text-white disabled:opacity-50"
+                              title="Check in attendee"
+                              aria-label="Check in attendee"
+                            >
+                              <Check className="h-4 w-4" />
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

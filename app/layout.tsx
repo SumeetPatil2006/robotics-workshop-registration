@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { ToastProvider } from "@/components/toast";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -26,7 +27,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       data-scroll-behavior="smooth"
       className={`${manrope.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
-      <body className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">{children}</body>
+      <body className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+        <ToastProvider>{children}</ToastProvider>
+      </body>
     </html>
   );
 }
