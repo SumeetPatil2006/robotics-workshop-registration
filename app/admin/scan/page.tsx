@@ -531,11 +531,11 @@ export default function AdminScanPage() {
           <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
             <div className={`rounded-[24px] border border-[var(--border)] bg-[var(--soft-blue)] p-3 ${status !== "scanning" ? "hidden lg:block" : "block"}`}>
               <div className="relative overflow-hidden rounded-[18px] border border-[#dfeafc] bg-[#dfeafc]">
-                <video ref={videoRef} className="h-[420px] w-full object-cover" autoPlay playsInline muted />
+                <video ref={videoRef} className="h-[320px] md:h-[420px] w-full object-cover" autoPlay playsInline muted />
 
                 {/* Central viewfinder reticle matching the central scanning ROI */}
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                  <div className="relative h-56 w-56 rounded-2xl border-2 border-dashed border-white/60 shadow-[0_0_0_9999px_rgba(15,23,42,0.18)]">
+                  <div className="relative h-48 w-48 md:h-56 md:w-56 rounded-2xl border-2 border-dashed border-white/60 shadow-[0_0_0_9999px_rgba(15,23,42,0.18)]">
                     <div className="absolute -top-1 -left-1 h-5 w-5 rounded-tl border-t-4 border-l-4 border-[var(--blue)]" />
                     <div className="absolute -top-1 -right-1 h-5 w-5 rounded-tr border-t-4 border-r-4 border-[var(--blue)]" />
                     <div className="absolute -bottom-1 -left-1 h-5 w-5 rounded-bl border-b-4 border-l-4 border-[var(--blue)]" />
@@ -546,18 +546,18 @@ export default function AdminScanPage() {
             </div>
 
             <div className="flex flex-col justify-between">
-              <div className="rounded-[24px] border border-[var(--border)] bg-white p-5">
+              <div className="rounded-[24px] border border-[var(--border)] bg-white p-4 sm:p-5">
                 <div
                   className={
                     status === "valid" || status === "check_in_success"
-                      ? "flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800"
+                      ? "flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 sm:p-4 text-emerald-800"
                       : status === "already_checked_in"
-                        ? "flex items-center gap-3 rounded-2xl border border-violet-200 bg-violet-50 p-4 text-violet-800"
+                        ? "flex items-center gap-3 rounded-2xl border border-violet-200 bg-violet-50 p-3 sm:p-4 text-violet-800"
                         : status === "invalid"
-                          ? "flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700"
+                          ? "flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-3 sm:p-4 text-red-700"
                           : status === "error"
-                            ? "flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800"
-                            : "flex items-center gap-3 rounded-2xl border border-[#dfeafc] bg-[#edf6ff] p-4 text-[var(--navy)]"
+                            ? "flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-3 sm:p-4 text-amber-800"
+                            : "flex items-center gap-3 rounded-2xl border border-[#dfeafc] bg-[#edf6ff] p-3 sm:p-4 text-[var(--navy)]"
                   }
                 >
                   {status === "valid" || status === "check_in_success" ? (
@@ -572,8 +572,8 @@ export default function AdminScanPage() {
                     <Camera className="h-5 w-5 shrink-0" />
                   )}
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.24em]">Status</p>
-                    <p className="mt-1 text-lg font-semibold">{message}</p>
+                    <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.24em]">Status</p>
+                    <p className="mt-0.5 sm:mt-1 text-base sm:text-lg font-semibold">{message}</p>
                   </div>
                 </div>
 
@@ -582,10 +582,10 @@ export default function AdminScanPage() {
                 ) : null}
 
                 {registration ? (
-                  <div className="mt-5 space-y-4 rounded-[20px] border border-[var(--border)] bg-[#f8fbff] p-4">
+                  <div className="mt-4 sm:mt-5 space-y-3 sm:space-y-4 rounded-[20px] border border-[var(--border)] bg-[#f8fbff] p-3 sm:p-4">
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">Participant</p>
-                      <p className="mt-2 text-xl font-semibold tracking-[-0.04em] text-[var(--navy)]">
+                      <p className="mt-1 sm:mt-2 text-lg sm:text-xl font-semibold tracking-[-0.04em] text-[var(--navy)]">
                         {registration.full_name}
                       </p>
                     </div>
