@@ -449,82 +449,154 @@ export function AdminDashboard() {
                 No registrations match the current search and filter.
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-left text-sm">
-                  <thead className="bg-[#f8fbff] text-[var(--muted)]">
-                    <tr>
-                      <th className="px-4 py-3 font-semibold">Registration ID</th>
-                      <th className="px-4 py-3 font-semibold">Full name</th>
-                      <th className="px-4 py-3 font-semibold">Email</th>
-                      <th className="px-4 py-3 font-semibold">Branch</th>
-                      <th className="px-4 py-3 font-semibold">Year</th>
-                      <th className="px-4 py-3 font-semibold">Registration date</th>
-                      <th className="px-4 py-3 font-semibold text-center">Check-in</th>
-                      <th className="px-4 py-3 font-semibold">Check-in time</th>
-                      <th className="px-4 py-3 font-semibold text-center">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[var(--border)] bg-white text-[var(--navy)]">
-                    {paginatedRegistrations.map((row) => (
-                      <tr key={row.id} className="align-middle">
-                        <td className="px-4 py-3 font-medium text-[var(--blue)]">{row.registration_id}</td>
-                        <td className="px-4 py-3">{row.full_name}</td>
-                        <td className="px-4 py-3 break-all">{row.email}</td>
-                        <td className="px-4 py-3">{row.branch}</td>
-                        <td className="px-4 py-3">{row.year}</td>
-                        <td className="px-4 py-3">{formatShortDate(row.created_at)}</td>
-                        <td className="px-4 py-3 text-center">
-                          {row.checked_in ? (
-                            <span
-                              className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50 text-emerald-600"
-                              title="Checked in"
-                            >
-                              <CheckCircle2 className="h-4 w-4" />
-                            </span>
-                          ) : (
-                            <span
-                              className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-amber-50 text-amber-600"
-                              title="Not checked in"
-                            >
-                              <XCircle className="h-4 w-4" />
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">{formatDateTime(row.checked_in_at)}</td>
-                        <td className="px-4 py-3 text-center whitespace-nowrap">
-                          {updatingTicketId === row.registration_id ? (
-                            <span className="inline-flex h-8 w-8 items-center justify-center text-[var(--blue)]">
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            </span>
-                          ) : row.checked_in ? (
-                            <button
-                              type="button"
-                              onClick={() => void handleToggleStatus(row.registration_id, true)}
-                              disabled={updatingTicketId !== null}
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[var(--muted)] transition hover:border-amber-400 hover:bg-amber-50 hover:text-amber-700 disabled:opacity-50"
-                              title="Undo check-in"
-                              aria-label="Undo check-in"
-                            >
-                              <RotateCcw className="h-4 w-4" />
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => void handleToggleStatus(row.registration_id, false)}
-                              disabled={updatingTicketId !== null}
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-600/30 bg-emerald-50 text-emerald-700 transition hover:bg-emerald-600 hover:text-white disabled:opacity-50"
-                              title="Check in attendee"
-                              aria-label="Check in attendee"
-                            >
-                              <Check className="h-4 w-4" />
-                            </button>
-                          )}
-                        </td>
+              <>
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="min-w-full text-left text-sm">
+                    <thead className="bg-[#f8fbff] text-[var(--muted)]">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold">Registration ID</th>
+                        <th className="px-4 py-3 font-semibold">Full name</th>
+                        <th className="px-4 py-3 font-semibold">Email</th>
+                        <th className="px-4 py-3 font-semibold">Branch</th>
+                        <th className="px-4 py-3 font-semibold">Year</th>
+                        <th className="px-4 py-3 font-semibold">Registration date</th>
+                        <th className="px-4 py-3 font-semibold text-center">Check-in</th>
+                        <th className="px-4 py-3 font-semibold">Check-in time</th>
+                        <th className="px-4 py-3 font-semibold text-center">Action</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-[var(--border)] bg-white text-[var(--navy)]">
+                      {paginatedRegistrations.map((row) => (
+                        <tr key={row.id} className="align-middle">
+                          <td className="px-4 py-3 font-medium text-[var(--blue)]">{row.registration_id}</td>
+                          <td className="px-4 py-3">{row.full_name}</td>
+                          <td className="px-4 py-3 break-all">{row.email}</td>
+                          <td className="px-4 py-3">{row.branch}</td>
+                          <td className="px-4 py-3">{row.year}</td>
+                          <td className="px-4 py-3">{formatShortDate(row.created_at)}</td>
+                          <td className="px-4 py-3 text-center">
+                            {row.checked_in ? (
+                              <span
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50 text-emerald-600"
+                                title="Checked in"
+                              >
+                                <CheckCircle2 className="h-4 w-4" />
+                              </span>
+                            ) : (
+                              <span
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-amber-50 text-amber-600"
+                                title="Not checked in"
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">{formatDateTime(row.checked_in_at)}</td>
+                          <td className="px-4 py-3 text-center whitespace-nowrap">
+                            {updatingTicketId === row.registration_id ? (
+                              <span className="inline-flex h-8 w-8 items-center justify-center text-[var(--blue)]">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              </span>
+                            ) : row.checked_in ? (
+                              <button
+                                type="button"
+                                onClick={() => void handleToggleStatus(row.registration_id, true)}
+                                disabled={updatingTicketId !== null}
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--border)] bg-white text-[var(--muted)] transition hover:border-amber-400 hover:bg-amber-50 hover:text-amber-700 disabled:opacity-50"
+                                title="Undo check-in"
+                                aria-label="Undo check-in"
+                              >
+                                <RotateCcw className="h-4 w-4" />
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => void handleToggleStatus(row.registration_id, false)}
+                                disabled={updatingTicketId !== null}
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-600/30 bg-emerald-50 text-emerald-700 transition hover:bg-emerald-600 hover:text-white disabled:opacity-50"
+                                title="Check in attendee"
+                                aria-label="Check in attendee"
+                              >
+                                <Check className="h-4 w-4" />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="block md:hidden divide-y divide-[var(--border)] bg-white">
+                  {paginatedRegistrations.map((row) => (
+                    <div key={row.id} className="p-5 hover:bg-[#fcfdff] transition">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <h3 className="truncate text-lg font-semibold tracking-[-0.03em] text-[var(--navy)]">{row.full_name}</h3>
+                          <p className="mt-0.5 truncate text-sm text-[var(--muted)]">{row.email}</p>
+                        </div>
+                        <div className="shrink-0 mt-0.5">
+                          {row.checked_in ? (
+                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-emerald-600" title="Checked in">
+                              <CheckCircle2 className="h-5 w-5" />
+                            </span>
+                          ) : (
+                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-amber-50 text-amber-600" title="Not checked in">
+                              <XCircle className="h-5 w-5" />
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid grid-cols-2 gap-y-3 gap-x-4 rounded-[16px] border border-[var(--border)] bg-[#f8fbff] p-4 text-sm shadow-[0_2px_8px_rgba(13,29,59,0.02)]">
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--muted)]">Reg ID</p>
+                          <p className="mt-1 font-semibold text-[var(--blue)] truncate">{row.registration_id}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--muted)]">Course</p>
+                          <p className="mt-1 font-semibold text-[var(--navy)] truncate">{row.branch} - {row.year}</p>
+                        </div>
+                        {row.checked_in && (
+                          <div className="col-span-2 border-t border-[var(--border)] pt-3">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--muted)]">Check-in time</p>
+                            <p className="mt-1 font-semibold text-[var(--navy)]">{formatDateTime(row.checked_in_at)}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-5 flex">
+                        {updatingTicketId === row.registration_id ? (
+                          <button disabled className="flex w-full items-center justify-center rounded-xl bg-[var(--soft-blue)] py-3.5 text-sm font-semibold text-[var(--blue)]">
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Updating...
+                          </button>
+                        ) : row.checked_in ? (
+                          <button
+                            type="button"
+                            onClick={() => void handleToggleStatus(row.registration_id, true)}
+                            disabled={updatingTicketId !== null}
+                            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-white py-3.5 text-sm font-semibold text-[var(--muted)] shadow-sm transition hover:border-amber-400 hover:bg-amber-50 hover:text-amber-700 disabled:opacity-50"
+                          >
+                            <RotateCcw className="h-4 w-4" />
+                            Undo Check-in
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => void handleToggleStatus(row.registration_id, false)}
+                            disabled={updatingTicketId !== null}
+                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3.5 text-sm font-semibold text-white shadow-[0_4px_14px_rgba(5,150,105,0.3)] transition hover:bg-emerald-700 disabled:opacity-50"
+                          >
+                            <Check className="h-4 w-4" />
+                            Check In Attendee
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
 
             {!loading && !error && filteredRegistrations.length > 0 && (
