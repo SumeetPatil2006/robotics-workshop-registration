@@ -140,7 +140,7 @@ export function AdminDashboard() {
     }
   };
 
-  const loadRegistrations = async () => {
+  const loadRegistrations = useCallback(async (isCancelled?: () => boolean) => {
     setLoading(true);
     setError("");
 
@@ -157,6 +157,10 @@ export function AdminDashboard() {
         stats?: DashboardStats;
         error?: string;
       };
+
+      if (isCancelled && isCancelled()) {
+        return;
+      }
 
       if (!response.ok || !data.registrations) {
         setError(data.error || "Unable to load registrations from the database.");
@@ -183,6 +187,9 @@ export function AdminDashboard() {
         },
       );
     } catch {
+      if (isCancelled && isCancelled()) {
+        return;
+      }
       setError("Unable to load registrations right now. Please try again.");
       setRegistrations([]);
       setStats({
@@ -192,87 +199,22 @@ export function AdminDashboard() {
         attendancePercentage: 0,
       });
     } finally {
-      setLoading(false);
+      if (!isCancelled || !isCancelled()) {
+        setLoading(false);
+      }
     }
-  };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
-
-    const fetchData = async () => {
-      if (cancelled) {
-        return;
-      }
-
-      setLoading(true);
-      setError("");
-
-      try {
-        const response = await fetch("/api/admin/registrations", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        const data = (await response.json()) as {
-          registrations?: RegistrationRow[];
-          stats?: DashboardStats;
-          error?: string;
-        };
-
-        if (cancelled) {
-          return;
-        }
-
-        if (!response.ok || !data.registrations) {
-          setError(data.error || "Unable to load registrations from the database.");
-          setRegistrations([]);
-          setStats({
-            totalRegistrations: 0,
-            checkedInCount: 0,
-            notCheckedInCount: 0,
-            attendancePercentage: 0,
-          });
-          return;
-        }
-
-        setRegistrations(data.registrations);
-        setStats(
-          data.stats || {
-            totalRegistrations: data.registrations.length,
-            checkedInCount: data.registrations.filter((row) => row.checked_in).length,
-            notCheckedInCount: data.registrations.filter((row) => !row.checked_in).length,
-            attendancePercentage:
-              data.registrations.length === 0
-                ? 0
-                : (data.registrations.filter((row) => row.checked_in).length / data.registrations.length) * 100,
-          },
-        );
-      } catch {
-        if (!cancelled) {
-          setError("Unable to load registrations right now. Please try again.");
-          setRegistrations([]);
-          setStats({
-            totalRegistrations: 0,
-            checkedInCount: 0,
-            notCheckedInCount: 0,
-            attendancePercentage: 0,
-          });
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
+    const init = async () => {
+      await loadRegistrations(() => cancelled);
     };
-
-    void fetchData();
-
+    void init();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [loadRegistrations]);
 
   const filteredRegistrations = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
