@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowUpDown, Camera, CheckCircle2, ChevronLeft, ChevronRight, LogOut, RefreshCcw, Search, Users, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { CustomSelect } from "@/components/custom-select";
-import { branchOptions, yearOptions } from "@/lib/event-data";
+import { yearOptions } from "@/lib/event-data";
 
 type RegistrationRow = {
   id: string;
@@ -72,7 +72,6 @@ export function AdminDashboard() {
   });
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "checked_in" | "not_checked_in">("all");
-  const [branchFilter, setBranchFilter] = useState<string>("all");
   const [yearFilter, setYearFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -231,12 +230,11 @@ export function AdminDashboard() {
             ? row.checked_in
             : !row.checked_in;
 
-      const matchesBranch = branchFilter === "all" ? true : row.branch === branchFilter;
       const matchesYear = yearFilter === "all" ? true : row.year === yearFilter;
 
-      return matchesQuery && matchesStatus && matchesBranch && matchesYear;
+      return matchesQuery && matchesStatus && matchesYear;
     });
-  }, [query, registrations, statusFilter, branchFilter, yearFilter]);
+  }, [query, registrations, statusFilter, yearFilter]);
 
   const totalPages = Math.ceil(filteredRegistrations.length / itemsPerPage);
 
@@ -269,11 +267,11 @@ export function AdminDashboard() {
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
               <button
                 type="button"
                 onClick={() => void loadRegistrations()}
-                className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-2.5 text-sm font-medium text-[var(--navy)] transition hover:border-[var(--blue)] hover:text-[var(--blue)]"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-2.5 text-sm font-medium text-[var(--navy)] transition hover:border-[var(--blue)] hover:text-[var(--blue)] sm:w-auto"
               >
                 <RefreshCcw className="h-4 w-4" />
                 Refresh
@@ -281,7 +279,7 @@ export function AdminDashboard() {
 
               <Link
                 href="/admin/scan"
-                className="inline-flex items-center gap-2 rounded-full bg-[var(--navy)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--blue)]"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--navy)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--blue)] sm:w-auto"
               >
                 <Camera className="h-4 w-4" />
                 Scan QR Ticket
@@ -290,7 +288,7 @@ export function AdminDashboard() {
               <button
                 type="button"
                 onClick={() => void handleLogout()}
-                className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-2.5 text-sm font-medium text-[var(--navy)] transition hover:border-red-300 hover:text-red-600"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-white px-4 py-2.5 text-sm font-medium text-[var(--navy)] transition hover:border-red-300 hover:text-red-600 sm:w-auto"
               >
                 <LogOut className="h-4 w-4" />
                 Logout
@@ -360,24 +358,6 @@ export function AdminDashboard() {
             </div>
 
             <div className="flex flex-1 flex-col gap-3 sm:flex-row lg:justify-end">
-              <div className="sm:w-40 lg:w-44">
-                <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Branch</label>
-                <CustomSelect
-                  value={branchFilter}
-                  onChange={(value) => {
-                    setBranchFilter(value);
-                    setCurrentPage(1);
-                  }}
-                  options={[
-                    { value: "all", label: "All branches" },
-                    ...branchOptions.map(b => ({ value: b, label: b }))
-                  ]}
-                  placeholder="Branch"
-                  className="w-full rounded-full border border-[var(--border)] bg-[var(--soft-blue)] px-4 py-3 text-sm text-[var(--navy)] focus:border-[var(--blue)] focus:outline-none transition hover:border-[var(--blue)]"
-                  dropdownClassName="rounded-[20px] border-[var(--border)] shadow-[0_8px_25px_rgba(13,29,59,0.08)]"
-                />
-              </div>
-
               <div className="sm:w-40 lg:w-44">
                 <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Year</label>
                 <CustomSelect
@@ -474,18 +454,18 @@ export function AdminDashboard() {
             )}
 
             {!loading && !error && filteredRegistrations.length > 0 && (
-              <div className="flex items-center justify-between border-t border-[var(--border)] bg-white px-4 py-3 sm:px-6">
-                <div className="hidden sm:block">
+              <div className="flex flex-col items-center justify-between gap-4 border-t border-[var(--border)] bg-white px-4 py-4 sm:flex-row sm:px-6 sm:py-3">
+                <div className="w-full text-center sm:w-auto sm:text-left">
                   <p className="text-sm text-[var(--muted)]">
                     Showing <span className="font-medium text-[var(--navy)]">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium text-[var(--navy)]">{Math.min(currentPage * itemsPerPage, filteredRegistrations.length)}</span> of <span className="font-medium text-[var(--navy)]">{filteredRegistrations.length}</span> results
                   </p>
                 </div>
-                <div className="flex flex-1 justify-between sm:justify-end gap-2">
+                <div className="flex w-full flex-1 justify-between gap-2 sm:w-auto sm:justify-end">
                   <button
                     type="button"
                     onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm font-medium text-[var(--navy)] transition hover:bg-gray-50 hover:text-[var(--blue)] hover:border-[var(--blue)] disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-[var(--navy)] disabled:hover:border-[var(--border)]"
+                    className="relative inline-flex flex-1 items-center justify-center rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm font-medium text-[var(--navy)] transition hover:bg-gray-50 hover:text-[var(--blue)] hover:border-[var(--blue)] disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-[var(--navy)] disabled:hover:border-[var(--border)] sm:flex-none"
                   >
                     <ChevronLeft className="mr-1 h-4 w-4" />
                     Previous
@@ -494,7 +474,7 @@ export function AdminDashboard() {
                     type="button"
                     onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                     disabled={currentPage === totalPages}
-                    className="relative inline-flex items-center rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm font-medium text-[var(--navy)] transition hover:bg-gray-50 hover:text-[var(--blue)] hover:border-[var(--blue)] disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-[var(--navy)] disabled:hover:border-[var(--border)]"
+                    className="relative inline-flex flex-1 items-center justify-center rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm font-medium text-[var(--navy)] transition hover:bg-gray-50 hover:text-[var(--blue)] hover:border-[var(--blue)] disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-[var(--navy)] disabled:hover:border-[var(--border)] sm:flex-none"
                   >
                     Next
                     <ChevronRight className="ml-1 h-4 w-4" />

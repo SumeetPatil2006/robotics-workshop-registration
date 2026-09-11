@@ -45,12 +45,12 @@ export default function HomePage() {
 
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
         <section className="pt-2 lg:pt-4">
-          <div className="grid items-center gap-10 lg:grid-cols-[1.08fr_0.92fr]">
+          <div className="grid items-center gap-10 md:grid-cols-2 lg:grid-cols-[1.08fr_0.92fr]">
             <div className="max-w-[620px]">
               <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[var(--blue)]">
                 {eventConfig.partner}
               </p>
-              <h1 className="mt-5 text-[3.3rem] font-semibold leading-[0.9] tracking-[-0.07em] text-[var(--navy)] sm:text-[4.1rem] lg:text-[5.3rem]">
+              <h1 className="mt-5 text-[2.8rem] font-semibold leading-[0.9] tracking-[-0.07em] text-[var(--navy)] sm:text-[4.1rem] lg:text-[5.3rem]">
                 <span className="block">Robotics</span>
                 <span className="block text-[var(--blue)]">Workshop</span>
               </h1>
@@ -96,7 +96,7 @@ export default function HomePage() {
         </section>
 
         <section className="mt-12 border-t border-[var(--border)] pt-10 lg:mt-14">
-          <div className="grid gap-8 lg:grid-cols-[1.15fr_1.1fr_0.95fr]">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-[1.15fr_1.1fr_0.95fr]">
             <div>
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#dfeafc] bg-[#edf6ff] text-[var(--blue)]">
