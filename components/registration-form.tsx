@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { branchOptions, yearOptions } from "@/lib/event-data";
+import { CustomSelect } from "@/components/custom-select";
 
 const initialForm = {
   fullName: "",
@@ -168,22 +169,19 @@ export function RegistrationForm() {
             Branch
           </label>
 
-          <select
+          <CustomSelect
             id="branch"
             name="branch"
             value={formData.branch}
-            onChange={handleChange}
+            onChange={(value) => {
+              setFormData((current) => ({ ...current, branch: value }));
+              setErrors((current) => ({ ...current, branch: "" }));
+            }}
+            options={branchOptions.map(b => ({ value: b, label: b }))}
+            placeholder="Select your branch"
             required
-            className="w-full rounded-xl border border-slate-200 bg-stone-50 px-4 py-3 text-slate-900 focus:border-slate-400 focus:outline-none"
-          >
-            <option value="">Select your branch</option>
-
-            {branchOptions.map((branch) => (
-              <option key={branch} value={branch}>
-                {branch}
-              </option>
-            ))}
-          </select>
+            className="w-full rounded-xl border border-slate-200 bg-stone-50 px-4 py-3 text-slate-900 focus:border-slate-400 focus:outline-none transition hover:border-slate-300"
+          />
 
           {errors.branch && (
             <p className="mt-2 text-sm text-red-600">
@@ -201,22 +199,19 @@ export function RegistrationForm() {
             Year
           </label>
 
-          <select
+          <CustomSelect
             id="year"
             name="year"
             value={formData.year}
-            onChange={handleChange}
+            onChange={(value) => {
+              setFormData((current) => ({ ...current, year: value }));
+              setErrors((current) => ({ ...current, year: "" }));
+            }}
+            options={yearOptions.map(y => ({ value: y, label: y }))}
+            placeholder="Select your year"
             required
-            className="w-full rounded-xl border border-slate-200 bg-stone-50 px-4 py-3 text-slate-900 focus:border-slate-400 focus:outline-none"
-          >
-            <option value="">Select your year</option>
-
-            {yearOptions.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
+            className="w-full rounded-xl border border-slate-200 bg-stone-50 px-4 py-3 text-slate-900 focus:border-slate-400 focus:outline-none transition hover:border-slate-300"
+          />
 
           {errors.year && (
             <p className="mt-2 text-sm text-red-600">

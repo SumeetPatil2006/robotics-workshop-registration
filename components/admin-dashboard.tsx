@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowUpDown, Camera, CheckCircle2, LogOut, RefreshCcw, Search, Users, XCircle } from "lucide-react";
+import { ArrowUpDown, Camera, CheckCircle2, ChevronLeft, ChevronRight, LogOut, RefreshCcw, Search, Users, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { CustomSelect } from "@/components/custom-select";
+import { branchOptions, yearOptions } from "@/lib/event-data";
 
 type RegistrationRow = {
   id: string;
@@ -70,8 +72,12 @@ export function AdminDashboard() {
   });
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "checked_in" | "not_checked_in">("all");
+  const [branchFilter, setBranchFilter] = useState<string>("all");
+  const [yearFilter, setYearFilter] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   const loadRegistrations = async () => {
     setLoading(true);
@@ -225,9 +231,19 @@ export function AdminDashboard() {
             ? row.checked_in
             : !row.checked_in;
 
-      return matchesQuery && matchesStatus;
+      const matchesBranch = branchFilter === "all" ? true : row.branch === branchFilter;
+      const matchesYear = yearFilter === "all" ? true : row.year === yearFilter;
+
+      return matchesQuery && matchesStatus && matchesBranch && matchesYear;
     });
-  }, [query, registrations, statusFilter]);
+  }, [query, registrations, statusFilter, branchFilter, yearFilter]);
+
+  const totalPages = Math.ceil(filteredRegistrations.length / itemsPerPage);
+
+  const paginatedRegistrations = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredRegistrations.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredRegistrations, currentPage]);
 
   const handleLogout = async () => {
     try {
@@ -326,31 +342,78 @@ export function AdminDashboard() {
         </div>
 
         <div className="rounded-[30px] border border-[var(--border)] bg-white p-5 shadow-[0_14px_40px_rgba(13,29,59,0.05)] sm:p-6">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-            <div className="flex-1 xl:max-w-xl">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="flex-1">
               <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Search</label>
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
                 <input
                   value={query}
-                  onChange={(event) => setQuery(event.target.value)}
+                  onChange={(event) => {
+                    setQuery(event.target.value);
+                    setCurrentPage(1);
+                  }}
                   placeholder="Search by name, email, registration ID, or branch"
                   className="w-full rounded-full border border-[var(--border)] bg-[var(--soft-blue)] py-3 pl-10 pr-4 text-sm text-[var(--navy)] placeholder:text-[var(--muted)] focus:border-[var(--blue)] focus:outline-none"
                 />
               </div>
             </div>
 
-            <div className="xl:w-52">
-              <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Status</label>
-              <select
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value as "all" | "checked_in" | "not_checked_in")}
-                className="w-full rounded-full border border-[var(--border)] bg-[var(--soft-blue)] px-4 py-3 text-sm text-[var(--navy)] focus:border-[var(--blue)] focus:outline-none"
-              >
-                <option value="all">All</option>
-                <option value="checked_in">Checked in</option>
-                <option value="not_checked_in">Not checked in</option>
-              </select>
+            <div className="flex flex-1 flex-col gap-3 sm:flex-row lg:justify-end">
+              <div className="sm:w-40 lg:w-44">
+                <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Branch</label>
+                <CustomSelect
+                  value={branchFilter}
+                  onChange={(value) => {
+                    setBranchFilter(value);
+                    setCurrentPage(1);
+                  }}
+                  options={[
+                    { value: "all", label: "All branches" },
+                    ...branchOptions.map(b => ({ value: b, label: b }))
+                  ]}
+                  placeholder="Branch"
+                  className="w-full rounded-full border border-[var(--border)] bg-[var(--soft-blue)] px-4 py-3 text-sm text-[var(--navy)] focus:border-[var(--blue)] focus:outline-none transition hover:border-[var(--blue)]"
+                  dropdownClassName="rounded-[20px] border-[var(--border)] shadow-[0_8px_25px_rgba(13,29,59,0.08)]"
+                />
+              </div>
+
+              <div className="sm:w-40 lg:w-44">
+                <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Year</label>
+                <CustomSelect
+                  value={yearFilter}
+                  onChange={(value) => {
+                    setYearFilter(value);
+                    setCurrentPage(1);
+                  }}
+                  options={[
+                    { value: "all", label: "All years" },
+                    ...yearOptions.map(y => ({ value: y, label: y }))
+                  ]}
+                  placeholder="Year"
+                  className="w-full rounded-full border border-[var(--border)] bg-[var(--soft-blue)] px-4 py-3 text-sm text-[var(--navy)] focus:border-[var(--blue)] focus:outline-none transition hover:border-[var(--blue)]"
+                  dropdownClassName="rounded-[20px] border-[var(--border)] shadow-[0_8px_25px_rgba(13,29,59,0.08)]"
+                />
+              </div>
+
+              <div className="sm:w-40 lg:w-44">
+                <label className="mb-2 block text-sm font-medium text-[var(--muted)]">Status</label>
+                <CustomSelect
+                  value={statusFilter}
+                  onChange={(value) => {
+                    setStatusFilter(value as "all" | "checked_in" | "not_checked_in");
+                    setCurrentPage(1);
+                  }}
+                  options={[
+                    { value: "all", label: "All status" },
+                    { value: "checked_in", label: "Checked in" },
+                    { value: "not_checked_in", label: "Not checked in" },
+                  ]}
+                  placeholder="Status"
+                  className="w-full rounded-full border border-[var(--border)] bg-[var(--soft-blue)] px-4 py-3 text-sm text-[var(--navy)] focus:border-[var(--blue)] focus:outline-none transition hover:border-[var(--blue)]"
+                  dropdownClassName="rounded-[20px] border-[var(--border)] shadow-[0_8px_25px_rgba(13,29,59,0.08)]"
+                />
+              </div>
             </div>
           </div>
 
@@ -381,7 +444,7 @@ export function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--border)] bg-white text-[var(--navy)]">
-                    {filteredRegistrations.map((row) => (
+                    {paginatedRegistrations.map((row) => (
                       <tr key={row.id} className="align-top">
                         <td className="px-4 py-3 font-medium text-[var(--blue)]">{row.registration_id}</td>
                         <td className="px-4 py-3">{row.full_name}</td>
@@ -407,6 +470,36 @@ export function AdminDashboard() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {!loading && !error && filteredRegistrations.length > 0 && (
+              <div className="flex items-center justify-between border-t border-[var(--border)] bg-white px-4 py-3 sm:px-6">
+                <div className="hidden sm:block">
+                  <p className="text-sm text-[var(--muted)]">
+                    Showing <span className="font-medium text-[var(--navy)]">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium text-[var(--navy)]">{Math.min(currentPage * itemsPerPage, filteredRegistrations.length)}</span> of <span className="font-medium text-[var(--navy)]">{filteredRegistrations.length}</span> results
+                  </p>
+                </div>
+                <div className="flex flex-1 justify-between sm:justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm font-medium text-[var(--navy)] transition hover:bg-gray-50 hover:text-[var(--blue)] hover:border-[var(--blue)] disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-[var(--navy)] disabled:hover:border-[var(--border)]"
+                  >
+                    <ChevronLeft className="mr-1 h-4 w-4" />
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="relative inline-flex items-center rounded-full border border-[var(--border)] bg-white px-4 py-2 text-sm font-medium text-[var(--navy)] transition hover:bg-gray-50 hover:text-[var(--blue)] hover:border-[var(--blue)] disabled:opacity-50 disabled:hover:bg-white disabled:hover:text-[var(--navy)] disabled:hover:border-[var(--border)]"
+                  >
+                    Next
+                    <ChevronRight className="ml-1 h-4 w-4" />
+                  </button>
+                </div>
               </div>
             )}
           </div>
