@@ -528,14 +528,14 @@ export default function AdminScanPage() {
             </div>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className={`rounded-[24px] border border-[var(--border)] bg-[var(--soft-blue)] p-3 ${status !== "scanning" ? "hidden lg:block" : "block"}`}>
+          <div className={status === "scanning" ? "grid gap-6 lg:grid-cols-[1.1fr_0.9fr]" : "flex justify-center"}>
+            <div className={`rounded-[24px] border border-[var(--border)] bg-[var(--soft-blue)] p-3 ${status !== "scanning" ? "hidden" : "block"}`}>
               <div className="relative overflow-hidden rounded-[18px] border border-[#dfeafc] bg-[#dfeafc]">
-                <video ref={videoRef} className="h-[320px] md:h-[420px] w-full object-cover" autoPlay playsInline muted />
+                <video ref={videoRef} className="h-[420px] w-full object-cover" autoPlay playsInline muted />
 
                 {/* Central viewfinder reticle matching the central scanning ROI */}
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                  <div className="relative h-48 w-48 md:h-56 md:w-56 rounded-2xl border-2 border-dashed border-white/60 shadow-[0_0_0_9999px_rgba(15,23,42,0.18)]">
+                  <div className="relative h-56 w-56 rounded-2xl border-2 border-dashed border-white/60 shadow-[0_0_0_9999px_rgba(15,23,42,0.18)]">
                     <div className="absolute -top-1 -left-1 h-5 w-5 rounded-tl border-t-4 border-l-4 border-[var(--blue)]" />
                     <div className="absolute -top-1 -right-1 h-5 w-5 rounded-tr border-t-4 border-r-4 border-[var(--blue)]" />
                     <div className="absolute -bottom-1 -left-1 h-5 w-5 rounded-bl border-b-4 border-l-4 border-[var(--blue)]" />
@@ -545,7 +545,7 @@ export default function AdminScanPage() {
               </div>
             </div>
 
-            <div className="flex flex-col justify-between">
+            <div className={`flex flex-col justify-between ${status !== "scanning" ? "w-full max-w-lg" : "w-full"}`}>
               <div className="rounded-[24px] border border-[var(--border)] bg-white p-4 sm:p-5">
                 <div
                   className={
