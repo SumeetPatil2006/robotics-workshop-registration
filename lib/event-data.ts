@@ -11,7 +11,7 @@ export const eventConfig = {
     "Pick & Place Robot",
   ],
   isFree: true,
-  date: "11 September",
+  date: "12 September",
   venue: "KBTCOE",
   registrationDeadline: "10 September",
   capacity: "TBD",
