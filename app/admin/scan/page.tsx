@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Camera, CheckCircle2, ShieldCheck, XCircle } from "lucide-react";
+import { ArrowLeft, Camera, CheckCircle2, Loader2, ShieldCheck, XCircle } from "lucide-react";
 import { BarcodeFormat, BrowserQRCodeReader } from "@zxing/browser";
 import { DecodeHintType } from "@zxing/library";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "@/components/toast";
 
 type RegistrationRecord = {
   id: string;
@@ -76,6 +77,7 @@ export default function AdminScanPage() {
   const [message, setMessage] = useState("Scanning for QR ticket...");
   const [registration, setRegistration] = useState<RegistrationRecord | null>(null);
   const [cameraError, setCameraError] = useState("");
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
 
   const resumeForNextScan = useCallback(() => {
     if (autoResumeTimerRef.current) {
@@ -86,6 +88,7 @@ export default function AdminScanPage() {
     setCameraError("");
     currentTicketIdRef.current = null;
     isProcessingRef.current = false;
+    setIsCheckingIn(false);
     setStatus("scanning");
     setMessage("Scanning for QR ticket...");
     // Clear last processed code so the same ticket can be re-scanned if intentional
@@ -95,12 +98,11 @@ export default function AdminScanPage() {
   }, []);
 
   const handleCheckIn = async () => {
-    if (!currentTicketIdRef.current) {
+    if (!currentTicketIdRef.current || isCheckingIn) {
       return;
     }
 
-    setStatus("scanning");
-    setMessage("Checking in...");
+    setIsCheckingIn(true);
 
     try {
       const response = await fetch("/api/admin/check-in", {
@@ -121,7 +123,14 @@ export default function AdminScanPage() {
       if (!response.ok || !data.registration) {
         setStatus("invalid");
         setMessage(data.error || "INVALID TICKET");
+        toast.error(data.error || "Failed to check in ticket");
         setRegistration(null);
+        if (autoResumeTimerRef.current) {
+          window.clearTimeout(autoResumeTimerRef.current);
+        }
+        autoResumeTimerRef.current = window.setTimeout(() => {
+          resumeForNextScan();
+        }, 2500);
         return;
       }
 
@@ -134,6 +143,7 @@ export default function AdminScanPage() {
       setRegistration(updatedRegistration);
       setStatus("check_in_success");
       setMessage("CHECK-IN SUCCESSFUL");
+      toast.success(`Checked in: ${updatedRegistration.full_name} (${updatedRegistration.registration_id})!`);
 
       // Optional haptic feedback on mobile
       if (typeof navigator !== "undefined" && navigator.vibrate) {
@@ -142,17 +152,26 @@ export default function AdminScanPage() {
         } catch {}
       }
 
-      // Automatically re-arm for next attendee after 1.8 seconds so line flows smoothly
+      // Automatically re-arm for next attendee smoothly without needing any manual click
       if (autoResumeTimerRef.current) {
         window.clearTimeout(autoResumeTimerRef.current);
       }
       autoResumeTimerRef.current = window.setTimeout(() => {
         resumeForNextScan();
-      }, 1800);
+      }, 1200);
     } catch {
       setStatus("invalid");
       setMessage("INVALID TICKET");
+      toast.error("Network error while checking in");
       setRegistration(null);
+      if (autoResumeTimerRef.current) {
+        window.clearTimeout(autoResumeTimerRef.current);
+      }
+      autoResumeTimerRef.current = window.setTimeout(() => {
+        resumeForNextScan();
+      }, 2500);
+    } finally {
+      setIsCheckingIn(false);
     }
   };
 
@@ -183,19 +202,33 @@ export default function AdminScanPage() {
       if (!response.ok || !data.registration) {
         setStatus("invalid");
         setMessage(data.error || "INVALID TICKET");
+        toast.error(data.error || "Ticket not found");
         setRegistration(null);
         isProcessingRef.current = false;
+        if (autoResumeTimerRef.current) {
+          window.clearTimeout(autoResumeTimerRef.current);
+        }
+        autoResumeTimerRef.current = window.setTimeout(() => {
+          resumeForNextScan();
+        }, 2500);
         return;
       }
 
       if (data.already_checked_in) {
         setStatus("already_checked_in");
         setMessage("ALREADY CHECKED IN");
+        toast.info(`${data.registration.full_name} is already checked in.`);
         setRegistration({
           ...data.registration,
           checked_in_at: data.checked_in_at ?? data.registration.checked_in_at ?? null,
         });
         isProcessingRef.current = false;
+        if (autoResumeTimerRef.current) {
+          window.clearTimeout(autoResumeTimerRef.current);
+        }
+        autoResumeTimerRef.current = window.setTimeout(() => {
+          resumeForNextScan();
+        }, 2500);
         return;
       }
 
@@ -206,10 +239,17 @@ export default function AdminScanPage() {
     } catch {
       setStatus("invalid");
       setMessage("INVALID TICKET");
+      toast.error("Error verifying ticket");
       setRegistration(null);
       isProcessingRef.current = false;
+      if (autoResumeTimerRef.current) {
+        window.clearTimeout(autoResumeTimerRef.current);
+      }
+      autoResumeTimerRef.current = window.setTimeout(() => {
+        resumeForNextScan();
+      }, 2500);
     }
-  }, []);
+  }, [resumeForNextScan]);
 
   const handleDetectedCode = useCallback(
     (candidate: string) => {
@@ -575,32 +615,84 @@ export default function AdminScanPage() {
                 ) : null}
               </div>
 
-              {status === "valid" ? (
+              {/* Bottom Action Area */}
+              {status === "scanning" ? (
+                <div className="mt-4 flex items-center justify-center gap-2.5 rounded-full border border-[var(--border)] bg-[#f8fbff] py-3.5 px-4 text-sm font-medium text-[var(--muted)]">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                  </span>
+                  Scanner active • Align QR code in frame to scan
+                </div>
+              ) : status === "valid" ? (
                 <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                   <button
                     type="button"
-                    onClick={handleCheckIn}
-                    className="flex-1 inline-flex items-center justify-center rounded-full bg-[var(--navy)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--blue)]"
+                    onClick={() => void handleCheckIn()}
+                    disabled={isCheckingIn}
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
                   >
-                    CHECK IN
+                    {isCheckingIn ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Checking in...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="h-4 w-4" />
+                        Check In Attendee
+                      </>
+                    )}
                   </button>
                   <button
                     type="button"
                     onClick={resumeForNextScan}
-                    className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-white px-5 py-3 text-sm font-semibold text-[var(--navy)] transition hover:bg-[#edf6ff]"
+                    disabled={isCheckingIn}
+                    className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-white px-5 py-3 text-sm font-semibold text-[var(--navy)] transition hover:bg-[#edf6ff] disabled:opacity-50"
                   >
-                    Scan again
+                    Skip / Next
                   </button>
                 </div>
-              ) : (
+              ) : status === "check_in_success" ? (
+                <div className="mt-4 flex items-center justify-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 py-3.5 px-4 text-sm font-semibold text-emerald-800">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  Checked in! Ready for next attendee...
+                </div>
+              ) : status === "already_checked_in" ? (
+                <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 rounded-2xl border border-violet-200 bg-violet-50/70 p-3">
+                  <span className="text-xs sm:text-sm font-medium text-violet-900">
+                    Already checked in. Resuming scanner...
+                  </span>
+                  <button
+                    type="button"
+                    onClick={resumeForNextScan}
+                    className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-violet-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-violet-800"
+                  >
+                    Scan next attendee
+                  </button>
+                </div>
+              ) : status === "invalid" ? (
+                <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50/70 p-3">
+                  <span className="text-xs sm:text-sm font-medium text-red-900">
+                    Ticket not recognized. Resuming scanner...
+                  </span>
+                  <button
+                    type="button"
+                    onClick={resumeForNextScan}
+                    className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-red-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-700"
+                  >
+                    Scan next attendee
+                  </button>
+                </div>
+              ) : status === "error" ? (
                 <button
                   type="button"
-                  onClick={resumeForNextScan}
+                  onClick={() => window.location.reload()}
                   className="mt-4 inline-flex items-center justify-center rounded-full bg-[var(--navy)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--blue)]"
                 >
-                  Scan again
+                  Reload camera
                 </button>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

@@ -11,7 +11,7 @@
   --soft-blue: #edf6ff;
 }
 
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-manrope);
