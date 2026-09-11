@@ -95,6 +95,11 @@ export default function AdminScanPage() {
     lastProcessedCodeRef.current = { code: "", timestamp: 0 };
     // Immediately re-arm scanning loop without touching media stream
     isScanningPausedRef.current = false;
+    
+    // Ensure video resumes playing if the browser paused it while hidden
+    if (videoRef.current && videoRef.current.paused) {
+      videoRef.current.play().catch(() => {});
+    }
   }, []);
 
   const handleCheckIn = async () => {
@@ -524,7 +529,7 @@ export default function AdminScanPage() {
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="rounded-[24px] border border-[var(--border)] bg-[var(--soft-blue)] p-3">
+            <div className={`rounded-[24px] border border-[var(--border)] bg-[var(--soft-blue)] p-3 ${status !== "scanning" ? "hidden lg:block" : "block"}`}>
               <div className="relative overflow-hidden rounded-[18px] border border-[#dfeafc] bg-[#dfeafc]">
                 <video ref={videoRef} className="h-[420px] w-full object-cover" autoPlay playsInline muted />
 
